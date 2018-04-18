@@ -32,7 +32,7 @@ class TranslatorForm : View() {
 	private val controller = TranslatorController()
 
 	private var lastTranslatedWord = ""
-	private var testThread: Thread? = null
+	private var transThread: Thread? = null
 
 	private var dragOffsetX = 0.0
 	private var dragOffsetY = 0.0
@@ -85,13 +85,13 @@ class TranslatorForm : View() {
 		if (word != lastTranslatedWord) {
 			lastTranslatedWord = word
 
-			testThread?.interrupt()
-			testThread = TestThread(word)
-			testThread?.start()
+			transThread?.interrupt()
+			transThread = TransThread(word)
+			transThread?.start()
 		}
 	}
 
-	private inner class TestThread(private val word: String) : Thread() {
+	private inner class TransThread(private val word: String) : Thread() {
 		override fun run() {
 			try {
 //				println("$id Translating")
