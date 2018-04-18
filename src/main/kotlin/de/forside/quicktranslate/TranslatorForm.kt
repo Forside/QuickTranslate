@@ -11,21 +11,28 @@ import tornadofx.View
 
 class TranslatorForm : View() {
 
+	/*
+	 * Form controls
+	 */
 	override val root: AnchorPane by fxml()
 //	private val toolbarMain: ToolBar by fxid()
 
 	private val vboxMain: VBox by fxid()
 
 	private val hboxForm: HBox by fxid()
-	private val textInput: TextField by fxid()
-	private val buttonTranslate: Button by fxid()
+	private val textWord: TextField by fxid()
+//	private val buttonTranslate: Button by fxid()
 
 	private val hboxWindowButtons: HBox by fxid()
 	private val buttonClose: Button by fxid()
 
 	private val labelResult: Label by fxid()
 
+
 	private val controller = TranslatorController()
+
+	private var lastTranslatedWord = ""
+	private var testThread: Thread? = null
 
 	init {
 		this.title = "QuickTranslate"
@@ -48,30 +55,63 @@ class TranslatorForm : View() {
 		AnchorPane.setLeftAnchor(labelResult, 0.0)
 		AnchorPane.setRightAnchor(labelResult, 0.0)
 
-		buttonTranslate.setOnAction {
-			println("Translating!")
+		/*buttonTranslate.setOnAction {
+			getTranslation(textWord.text)
+		}*/
 
-			runAsync {
-				controller.getTranslation(textInput.text)
-			} ui { result ->
-				when (result.tuc.size) {
-					0 -> labelResult.text = "No translation found"
-
-					else -> {
-						val resultString = StringBuilder()
-						result.tuc.forEachIndexed { index, glosbeResultTuc ->
-							resultString.append(glosbeResultTuc.phrase?.text)
-							if (index < result.tuc.size - 1)
-								resultString.append("; ")
-						}
-						labelResult.text = resultString.toString()
-					}
-				}
-			}
+		textWord.setOnKeyReleased {
+			getTranslation(textWord.text)
 		}
 
 		buttonClose.setOnAction {
 			Platform.exit()
+		}
+	}
+
+	private fun getTranslation(word: String) {
+		if (word != lastTranslatedWord) {
+			lastTranslatedWord = word
+
+			testThread?.interrupt()
+			testThread = TestThread(word)
+			testThread?.start()
+		}
+	}
+
+	private inner class TestThread(private val word: String) : Thread() {
+		override fun run() {
+			try {
+				println("$id Translating")
+				sleep(500)
+				if (isInterrupted) {
+					println("$id interrupted")
+					return
+				}
+
+				runAsync {
+					controller.getTranslation(word)
+				} ui { result ->
+					when (result.tuc.size) {
+						0 -> {
+							labelResult.text = "No translation found"
+							println("$id no translation found")
+						}
+
+						else -> {
+							val resultString = StringBuilder()
+							result.tuc.forEachIndexed { index, glosbeResultTuc ->
+								resultString.append(glosbeResultTuc.phrase?.text)
+								if (index < result.tuc.size - 1)
+									resultString.append("; ")
+							}
+							labelResult.text = resultString.toString()
+							println("$id finished: $resultString")
+						}
+					}
+				}
+			} catch (e: InterruptedException) {
+				println("$id interrupted ex")
+			}
 		}
 	}
 
