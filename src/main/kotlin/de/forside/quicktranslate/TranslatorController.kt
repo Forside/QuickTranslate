@@ -1,6 +1,5 @@
 package de.forside.quicktranslate
 
-import javafx.collections.ObservableList
 import tornadofx.*
 import javax.json.JsonObject
 

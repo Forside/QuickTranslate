@@ -5,7 +5,7 @@ import javafx.stage.StageStyle
 import tornadofx.App
 import tornadofx.launch
 
-class TranslatorApp : App(TranslatorForm::class) {
+class TranslatorApp : App(TranslatorForm::class, TranslatorStyle::class) {
 
 	init {
 		setUserAgentStylesheet(STYLESHEET_MODENA)

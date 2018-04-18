@@ -7,7 +7,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<AnchorPane id="root" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" minWidth="350">
+<AnchorPane id="root" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" minWidth="350" styleClass="body">
 
 	<!--<ToolBar fx:id="toolbarMain" minHeight="20" maxHeight="20" prefHeight="20">
 
