@@ -34,6 +34,9 @@ class TranslatorForm : View() {
 	private var lastTranslatedWord = ""
 	private var testThread: Thread? = null
 
+	private var dragOffsetX = 0.0
+	private var dragOffsetY = 0.0
+
 	init {
 		this.title = "QuickTranslate"
 
@@ -66,6 +69,16 @@ class TranslatorForm : View() {
 		buttonClose.setOnAction {
 			Platform.exit()
 		}
+
+		root.setOnMousePressed { event ->
+			dragOffsetX = event.screenX - primaryStage.x
+			dragOffsetY = event.screenY - primaryStage.y
+		}
+
+		root.setOnMouseDragged { event ->
+			primaryStage.x = event.screenX - dragOffsetX
+			primaryStage.y = event.screenY - dragOffsetY
+		}
 	}
 
 	private fun getTranslation(word: String) {
@@ -81,10 +94,10 @@ class TranslatorForm : View() {
 	private inner class TestThread(private val word: String) : Thread() {
 		override fun run() {
 			try {
-				println("$id Translating")
+//				println("$id Translating")
 				sleep(500)
 				if (isInterrupted) {
-					println("$id interrupted")
+//					println("$id interrupted")
 					return
 				}
 
@@ -94,7 +107,7 @@ class TranslatorForm : View() {
 					when (result.tuc.size) {
 						0 -> {
 							labelResult.text = "No translation found"
-							println("$id no translation found")
+//							println("$id no translation found")
 						}
 
 						else -> {
@@ -105,12 +118,12 @@ class TranslatorForm : View() {
 									resultString.append("; ")
 							}
 							labelResult.text = resultString.toString()
-							println("$id finished: $resultString")
+//							println("$id finished: $resultString")
 						}
 					}
 				}
 			} catch (e: InterruptedException) {
-				println("$id interrupted ex")
+//				println("$id interrupted ex")
 			}
 		}
 	}
