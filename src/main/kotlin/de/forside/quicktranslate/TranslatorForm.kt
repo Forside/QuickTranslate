@@ -20,13 +20,11 @@ class TranslatorForm : View(), NativeKeyListener {
 	 * Form controls
 	 */
 	override val root: AnchorPane by fxml()
-//	private val toolbarMain: ToolBar by fxid()
 
 	private val vboxMain: VBox by fxid()
 
 	private val hboxForm: HBox by fxid()
 	private val textWord: TextField by fxid()
-//	private val buttonTranslate: Button by fxid()
 
 	private val hboxWindowButtons: HBox by fxid()
 	private val buttonClose: Button by fxid()
@@ -45,7 +43,6 @@ class TranslatorForm : View(), NativeKeyListener {
 	private val keysPressed = mutableMapOf<Int, Boolean>()
 	private val hotkeys = mutableMapOf<List<Int>, ()->Unit>()
 
-	//private val langs = arrayOf("deu", "eng")
 	private val langs = arrayOf(
 			Pair("deu", "German"),
 			Pair("eng", "English")
@@ -58,14 +55,10 @@ class TranslatorForm : View(), NativeKeyListener {
 		currentStage?.initStyle(StageStyle.UNDECORATED)
 //		currentStage?.isAlwaysOnTop = true
 
-		/*AnchorPane.setTopAnchor(toolbarMain, 0.0)
-		AnchorPane.setLeftAnchor(toolbarMain, 0.0)
-		AnchorPane.setRightAnchor(toolbarMain, 0.0)*/
-
-		AnchorPane.setTopAnchor(vboxMain, 5.0)
-		AnchorPane.setLeftAnchor(vboxMain, 5.0)
-		AnchorPane.setRightAnchor(vboxMain, 5.0)
-		AnchorPane.setBottomAnchor(vboxMain, 5.0)
+		AnchorPane.setTopAnchor(vboxMain, 0.0)
+		AnchorPane.setLeftAnchor(vboxMain, 0.0)
+		AnchorPane.setRightAnchor(vboxMain, 0.0)
+		AnchorPane.setBottomAnchor(vboxMain, 0.0)
 
 		AnchorPane.setTopAnchor(hboxForm, 0.0)
 		AnchorPane.setLeftAnchor(hboxForm, 0.0)
@@ -75,10 +68,6 @@ class TranslatorForm : View(), NativeKeyListener {
 
 		AnchorPane.setLeftAnchor(labelResult, 0.0)
 		AnchorPane.setRightAnchor(labelResult, 0.0)
-
-		/*buttonTranslate.setOnAction {
-			getTranslation(textWord.text)
-		}*/
 
 		textWord.setOnKeyReleased {
 			getTranslation(textWord.text, langs[langFrom].first, langs[langDest].first)
@@ -218,10 +207,8 @@ class TranslatorForm : View(), NativeKeyListener {
 	private inner class TransThread(private val word: String, private val from: String, private var dest: String) : Thread() {
 		override fun run() {
 			try {
-//				println("$id Translating")
 				sleep(500)
 				if (isInterrupted) {
-//					println("$id interrupted")
 					return
 				}
 
@@ -231,7 +218,6 @@ class TranslatorForm : View(), NativeKeyListener {
 					when (result.tuc.size) {
 						0 -> {
 							labelResult.text = "No translation found"
-//							println("$id no translation found")
 						}
 
 						else -> {
@@ -242,13 +228,10 @@ class TranslatorForm : View(), NativeKeyListener {
 									resultString.append("; ")
 							}
 							labelResult.text = resultString.toString()
-//							println("$id finished: $resultString")
 						}
 					}
 				}
-			} catch (e: InterruptedException) {
-//				println("$id interrupted ex")
-			}
+			} catch (e: InterruptedException) {}
 		}
 	}
 

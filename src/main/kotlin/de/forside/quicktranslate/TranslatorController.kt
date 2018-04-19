@@ -17,11 +17,6 @@ class TranslatorController : Controller() {
 }
 
 class GlosbeResult : JsonModel {
-//	private val resultProperty = SimpleStringProperty()
-//	var result by resultProperty
-
-	//private val tuc = arrayOf<SimpleObjectProperty>()
-
 	var result: String? = null
 	var tuc = mutableListOf<GlosbeResultTuc>()
 
