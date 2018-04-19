@@ -31,5 +31,9 @@ class TranslatorStyle : Stylesheet() {
 		label {
 			textFill = Color.WHITE
 		}
+
+		contextMenu {
+			backgroundColor += Color.BLACK
+		}
 	}
 }
