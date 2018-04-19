@@ -1,9 +1,7 @@
 package de.forside.quicktranslate
 
 import javafx.application.Platform
-import javafx.scene.control.Button
-import javafx.scene.control.Label
-import javafx.scene.control.TextField
+import javafx.scene.control.*
 import javafx.scene.input.KeyCode
 import javafx.scene.layout.AnchorPane
 import javafx.scene.layout.HBox
@@ -47,6 +45,14 @@ class TranslatorForm : View(), NativeKeyListener {
 	private val keysPressed = mutableMapOf<Int, Boolean>()
 	private val hotkeys = mutableMapOf<List<Int>, ()->Unit>()
 
+	//private val langs = arrayOf("deu", "eng")
+	private val langs = arrayOf(
+			Pair("deu", "German"),
+			Pair("eng", "English")
+	)
+	private var langFrom = 0
+	private var langDest = 0
+
 	init {
 		title = "QuickTranslate"
 		currentStage?.initStyle(StageStyle.UNDECORATED)
@@ -75,7 +81,7 @@ class TranslatorForm : View(), NativeKeyListener {
 		}*/
 
 		textWord.setOnKeyReleased {
-			getTranslation(textWord.text)
+			getTranslation(textWord.text, langs[langFrom].first, langs[langDest].first)
 		}
 
 		buttonClose.setOnAction {
@@ -109,6 +115,50 @@ class TranslatorForm : View(), NativeKeyListener {
 				resetTranslation()
 			}
 		}
+
+		initMenu()
+	}
+
+	private fun initMenu() {
+		val fromToggleGroup = ToggleGroup()
+		val fromItems = langs.map { lang ->
+			RadioMenuItem(lang.second).apply {
+				toggleGroup = fromToggleGroup
+				setOnAction {
+					langFrom = parentMenu.items.indexOf(this)
+				}
+			}
+		}
+		fromItems[0].isSelected = true
+		langFrom = 0
+		val menuFrom = Menu("From", null, *fromItems.toTypedArray())
+
+		val destToggleGroup = ToggleGroup()
+		val destItems = langs.map { lang ->
+			RadioMenuItem(lang.second).apply {
+				toggleGroup = destToggleGroup
+				setOnAction {
+					langDest = parentMenu.items.indexOf(this)
+				}
+			}
+		}
+		destItems[1].isSelected = true
+		langDest = 1
+		val menuDest = Menu("Dest", null, *destItems.toTypedArray())
+
+		val itemOnTop = RadioMenuItem("Always on top").apply {
+			setOnAction {
+				currentStage?.isAlwaysOnTop = isSelected
+			}
+		}
+
+		val menu = ContextMenu(menuFrom, menuDest, itemOnTop)
+		menu.isHideOnEscape = true
+		menu.isAutoHide = true
+
+		root.setOnContextMenuRequested { e ->
+			menu.show(currentWindow, e.screenX, e.screenY)
+		}
 	}
 
 	private fun resetTranslation() {
@@ -117,53 +167,20 @@ class TranslatorForm : View(), NativeKeyListener {
 		textWord.requestFocus()
 	}
 
-	private fun getTranslation(word: String) {
+	private fun getTranslation(word: String, from: String, dest: String) {
 		if (word != lastTranslatedWord) {
 			lastTranslatedWord = word
 
-			if (word.isEmpty()) {
-				resetTranslation()
-			} else {
-				transThread?.interrupt()
-				transThread = TransThread(word)
-				transThread?.start()
-			}
-		}
-	}
+			when {
+				langFrom == langDest -> labelResult.text = "'From' and 'Dest' are equal"
 
-	private inner class TransThread(private val word: String) : Thread() {
-		override fun run() {
-			try {
-//				println("$id Translating")
-				sleep(500)
-				if (isInterrupted) {
-//					println("$id interrupted")
-					return
+				word.isEmpty() -> resetTranslation()
+
+				else -> {
+					transThread?.interrupt()
+					transThread = TransThread(word, from, dest)
+					transThread?.start()
 				}
-
-				runAsync {
-					controller.getTranslation(word)
-				} ui { result ->
-					when (result.tuc.size) {
-						0 -> {
-							labelResult.text = "No translation found"
-//							println("$id no translation found")
-						}
-
-						else -> {
-							val resultString = StringBuilder()
-							result.tuc.forEachIndexed { index, glosbeResultTuc ->
-								resultString.append(glosbeResultTuc.phrase?.text)
-								if (index < result.tuc.size - 1)
-									resultString.append("; ")
-							}
-							labelResult.text = resultString.toString()
-//							println("$id finished: $resultString")
-						}
-					}
-				}
-			} catch (e: InterruptedException) {
-//				println("$id interrupted ex")
 			}
 		}
 	}
@@ -196,6 +213,43 @@ class TranslatorForm : View(), NativeKeyListener {
 
 	override fun nativeKeyReleased(e: NativeKeyEvent) {
 		keysPressed[e.keyCode] = false
+	}
+
+	private inner class TransThread(private val word: String, private val from: String, private var dest: String) : Thread() {
+		override fun run() {
+			try {
+//				println("$id Translating")
+				sleep(500)
+				if (isInterrupted) {
+//					println("$id interrupted")
+					return
+				}
+
+				runAsync {
+					controller.getTranslation(word, from, dest)
+				} ui { result ->
+					when (result.tuc.size) {
+						0 -> {
+							labelResult.text = "No translation found"
+//							println("$id no translation found")
+						}
+
+						else -> {
+							val resultString = StringBuilder()
+							result.tuc.forEachIndexed { index, glosbeResultTuc ->
+								resultString.append(glosbeResultTuc.phrase?.text)
+								if (index < result.tuc.size - 1)
+									resultString.append("; ")
+							}
+							labelResult.text = resultString.toString()
+//							println("$id finished: $resultString")
+						}
+					}
+				}
+			} catch (e: InterruptedException) {
+//				println("$id interrupted ex")
+			}
+		}
 	}
 
 }
