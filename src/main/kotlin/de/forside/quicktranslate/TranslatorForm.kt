@@ -4,12 +4,19 @@ import javafx.application.Platform
 import javafx.scene.control.Button
 import javafx.scene.control.Label
 import javafx.scene.control.TextField
+import javafx.scene.input.KeyCode
 import javafx.scene.layout.AnchorPane
 import javafx.scene.layout.HBox
 import javafx.scene.layout.VBox
+import javafx.stage.StageStyle
+import javafx.util.Duration
+import org.jnativehook.GlobalScreen
+import org.jnativehook.keyboard.NativeKeyEvent
+import org.jnativehook.keyboard.NativeKeyListener
 import tornadofx.View
+import tornadofx.runLater
 
-class TranslatorForm : View() {
+class TranslatorForm : View(), NativeKeyListener {
 
 	/*
 	 * Form controls
@@ -37,8 +44,13 @@ class TranslatorForm : View() {
 	private var dragOffsetX = 0.0
 	private var dragOffsetY = 0.0
 
+	private val keysPressed = mutableMapOf<Int, Boolean>()
+	private val hotkeys = mutableMapOf<List<Int>, ()->Unit>()
+
 	init {
-		this.title = "QuickTranslate"
+		title = "QuickTranslate"
+		currentStage?.initStyle(StageStyle.UNDECORATED)
+//		currentStage?.isAlwaysOnTop = true
 
 		/*AnchorPane.setTopAnchor(toolbarMain, 0.0)
 		AnchorPane.setLeftAnchor(toolbarMain, 0.0)
@@ -70,24 +82,52 @@ class TranslatorForm : View() {
 			Platform.exit()
 		}
 
-		root.setOnMousePressed { event ->
-			dragOffsetX = event.screenX - primaryStage.x
-			dragOffsetY = event.screenY - primaryStage.y
+		root.setOnMousePressed { e ->
+			dragOffsetX = e.screenX - primaryStage.x
+			dragOffsetY = e.screenY - primaryStage.y
 		}
 
-		root.setOnMouseDragged { event ->
-			primaryStage.x = event.screenX - dragOffsetX
-			primaryStage.y = event.screenY - dragOffsetY
+		root.setOnMouseDragged { e ->
+			primaryStage.x = e.screenX - dragOffsetX
+			primaryStage.y = e.screenY - dragOffsetY
 		}
+
+		root.setOnKeyPressed { e ->
+			when (e.code) {
+				KeyCode.ESCAPE -> resetTranslation()
+
+				else -> {}
+			}
+		}
+
+		if (GlobalScreen.isNativeHookRegistered()) {
+			GlobalScreen.addNativeKeyListener(this)
+
+			registerHotkey(NativeKeyEvent.VC_CONTROL, NativeKeyEvent.VC_ALT, NativeKeyEvent.VC_T) {
+				currentStage?.toFront()
+				currentStage?.requestFocus()
+				resetTranslation()
+			}
+		}
+	}
+
+	private fun resetTranslation() {
+		textWord.clear()
+		labelResult.text = "Translate a word"
+		textWord.requestFocus()
 	}
 
 	private fun getTranslation(word: String) {
 		if (word != lastTranslatedWord) {
 			lastTranslatedWord = word
 
-			transThread?.interrupt()
-			transThread = TransThread(word)
-			transThread?.start()
+			if (word.isEmpty()) {
+				resetTranslation()
+			} else {
+				transThread?.interrupt()
+				transThread = TransThread(word)
+				transThread?.start()
+			}
 		}
 	}
 
@@ -126,6 +166,36 @@ class TranslatorForm : View() {
 //				println("$id interrupted ex")
 			}
 		}
+	}
+
+	private fun registerHotkey(vararg keys: Int, body: ()->Unit) {
+		hotkeys[keys.toList()] = body
+	}
+
+	override fun nativeKeyTyped(e: NativeKeyEvent) {
+	}
+
+	override fun nativeKeyPressed(e: NativeKeyEvent) {
+		keysPressed[e.keyCode] = true
+
+		hotkeys.forEach { keys, body ->
+			var keyCount = keys.size
+
+			keys.forEach {
+				if (keysPressed[it] == true)
+					keyCount--
+			}
+
+			if (keyCount == 0) {
+				runLater(Duration.millis(100.0)) {
+					body()
+				}
+			}
+		}
+	}
+
+	override fun nativeKeyReleased(e: NativeKeyEvent) {
+		keysPressed[e.keyCode] = false
 	}
 
 }
