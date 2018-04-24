@@ -7,13 +7,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<AnchorPane id="root" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" minWidth="250" styleClass="body">
-
-	<!--<ToolBar fx:id="toolbarMain" minHeight="20" maxHeight="20" prefHeight="20">
-
-		<Button text="bla" minHeight="20" maxHeight="20" prefHeight="20"/>
-
-	</ToolBar>-->
+<AnchorPane id="root" minWidth="250" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1">
 
 	<VBox fx:id="vboxMain" spacing="10">
 
@@ -22,8 +16,6 @@
 			<HBox fx:id="hboxForm" spacing="10">
 
 				<TextField fx:id="textWord" promptText="Your word" />
-
-				<!--<Button fx:id="buttonTranslate" text="Translate" />-->
 
 			</HBox>
 
@@ -37,7 +29,7 @@
 
 		<AnchorPane>
 
-			<Label fx:id="labelResult" text="Translate a word"/>
+			<Label fx:id="labelResult" id="label-result" text="Translate a word" />
 
 		</AnchorPane>
 

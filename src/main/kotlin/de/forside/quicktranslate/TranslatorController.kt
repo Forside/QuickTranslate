@@ -11,17 +11,12 @@ class TranslatorController : Controller() {
 		api.baseURI = "https://glosbe.com/gapi/"
 	}
 
-	fun getTranslation(word: String): GlosbeResult
-		= api.get("translate?from=deu&dest=eng&format=json&phrase=${word.urlEncoded}").one().toModel()
+	fun getTranslation(word: String, from: String, dest: String): GlosbeResult
+		= api.get("translate?from=${from.urlEncoded}&dest=${dest.urlEncoded}&format=json&phrase=${word.urlEncoded}").one().toModel()
 
 }
 
 class GlosbeResult : JsonModel {
-//	private val resultProperty = SimpleStringProperty()
-//	var result by resultProperty
-
-	//private val tuc = arrayOf<SimpleObjectProperty>()
-
 	var result: String? = null
 	var tuc = mutableListOf<GlosbeResultTuc>()
 

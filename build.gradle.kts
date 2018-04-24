@@ -2,7 +2,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 buildscript {
     var kotlinVersion: String by extra
-    kotlinVersion = "1.2.31"
+    kotlinVersion = "1.2.40"
 
     repositories {
         mavenCentral()
@@ -33,6 +33,7 @@ repositories {
 dependencies {
     implementation(kotlin("stdlib-jdk8", kotlinVersion))
     implementation("no.tornado:tornadofx:1.7.15")
+    implementation("com.1stleg:jnativehook:2.1.0")
 
     testImplementation("junit", "junit", "4.12")
 }
