@@ -13,11 +13,14 @@ import org.jnativehook.keyboard.NativeKeyEvent
 import org.jnativehook.keyboard.NativeKeyListener
 import tornadofx.View
 import tornadofx.runLater
+import kotlin.collections.set
 
 class TranslatorForm : View(), NativeKeyListener {
 
 	/*
+	 *******************************
 	 * Form controls
+	 *******************************
 	 */
 	override val root: AnchorPane by fxml()
 
@@ -30,6 +33,8 @@ class TranslatorForm : View(), NativeKeyListener {
 	private val buttonClose: Button by fxid()
 
 	private val labelResult: Label by fxid()
+
+	//******************************
 
 
 	private val controller = TranslatorController()
@@ -54,11 +59,13 @@ class TranslatorForm : View(), NativeKeyListener {
 		title = "QuickTranslate"
 		currentStage?.initStyle(StageStyle.UNDECORATED)
 //		currentStage?.isAlwaysOnTop = true
+		TranslatorStyle.setDesign(root, TranslatorStyle.Designs.BLACK)
+
 
 		AnchorPane.setTopAnchor(vboxMain, 0.0)
 		AnchorPane.setLeftAnchor(vboxMain, 0.0)
 		AnchorPane.setRightAnchor(vboxMain, 0.0)
-		AnchorPane.setBottomAnchor(vboxMain, 0.0)
+//		AnchorPane.setBottomAnchor(vboxMain, 0.0)
 
 		AnchorPane.setTopAnchor(hboxForm, 0.0)
 		AnchorPane.setLeftAnchor(hboxForm, 0.0)
@@ -78,13 +85,17 @@ class TranslatorForm : View(), NativeKeyListener {
 		}
 
 		root.setOnMousePressed { e ->
-			dragOffsetX = e.screenX - primaryStage.x
-			dragOffsetY = e.screenY - primaryStage.y
+			if (e.isPrimaryButtonDown) {
+				dragOffsetX = e.screenX - primaryStage.x
+				dragOffsetY = e.screenY - primaryStage.y
+			}
 		}
 
 		root.setOnMouseDragged { e ->
-			primaryStage.x = e.screenX - dragOffsetX
-			primaryStage.y = e.screenY - dragOffsetY
+			if (e.isPrimaryButtonDown) {
+				primaryStage.x = e.screenX - dragOffsetX
+				primaryStage.y = e.screenY - dragOffsetY
+			}
 		}
 
 		root.setOnKeyPressed { e ->
@@ -106,34 +117,50 @@ class TranslatorForm : View(), NativeKeyListener {
 		}
 
 		initMenu()
+
+		vboxMain.heightProperty().addListener { _, _, _ ->
+			root.autosize()
+			currentStage?.sizeToScene()
+		}
+		vboxMain.widthProperty().addListener { _, _, newValue ->
+			root.autosize()
+			currentStage?.sizeToScene()
+			labelResult.maxWidth = newValue.toDouble()
+		}
 	}
 
 	private fun initMenu() {
-		val fromToggleGroup = ToggleGroup()
-		val fromItems = langs.map { lang ->
-			RadioMenuItem(lang.second).apply {
-				toggleGroup = fromToggleGroup
-				setOnAction {
-					langFrom = parentMenu.items.indexOf(this)
+		val menuFrom = ToggleGroup().let { group ->
+			langs.map { lang ->
+				RadioMenuItem(lang.second).apply {
+					toggleGroup = group
+					setOnAction {
+						langFrom = parentMenu.items.indexOf(this)
+					}
 				}
+			}.let { items ->
+				group.selectToggle(items[0])
+				langFrom = 0
+				Menu("From", null, *items.toTypedArray())
 			}
 		}
-		fromItems[0].isSelected = true
-		langFrom = 0
-		val menuFrom = Menu("From", null, *fromItems.toTypedArray())
 
-		val destToggleGroup = ToggleGroup()
-		val destItems = langs.map { lang ->
-			RadioMenuItem(lang.second).apply {
-				toggleGroup = destToggleGroup
-				setOnAction {
-					langDest = parentMenu.items.indexOf(this)
+
+		val menuDest = ToggleGroup().let { group ->
+			langs.map { lang ->
+				RadioMenuItem(lang.second).apply {
+					toggleGroup = group
+					setOnAction {
+						langDest = parentMenu.items.indexOf(this)
+					}
 				}
+			}.let { items ->
+				group.selectToggle(items[1])
+				langDest = 1
+				Menu("Dest", null, *items.toTypedArray())
 			}
 		}
-		destItems[1].isSelected = true
-		langDest = 1
-		val menuDest = Menu("Dest", null, *destItems.toTypedArray())
+
 
 		val itemOnTop = RadioMenuItem("Always on top").apply {
 			setOnAction {
@@ -141,7 +168,23 @@ class TranslatorForm : View(), NativeKeyListener {
 			}
 		}
 
-		val menu = ContextMenu(menuFrom, menuDest, itemOnTop)
+
+		val menuDesign = ToggleGroup().let { group ->
+			TranslatorStyle.Designs.values().map { design ->
+				RadioMenuItem(design.name.toLowerCase().capitalize()).apply {
+					toggleGroup = group
+					setOnAction {
+						TranslatorStyle.setDesign(root, design)
+					}
+				}
+			}.let { items ->
+				group.selectToggle(items[1])
+				Menu("Design", null, *items.toTypedArray())
+			}
+		}
+
+
+		val menu = ContextMenu(menuFrom, menuDest, menuDesign, itemOnTop)
 		menu.isHideOnEscape = true
 		menu.isAutoHide = true
 
