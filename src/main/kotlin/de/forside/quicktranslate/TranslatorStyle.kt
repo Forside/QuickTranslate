@@ -1,39 +1,47 @@
 package de.forside.quicktranslate
 
-import javafx.scene.paint.Color
-import tornadofx.Stylesheet
-import tornadofx.box
-import tornadofx.cssclass
+import de.forside.quicktranslate.styles.BlackStyle
+import de.forside.quicktranslate.styles.ConsoleStyle
+import de.forside.quicktranslate.styles.DefaultStyle
+import javafx.scene.Node
+import tornadofx.*
 
 class TranslatorStyle : Stylesheet() {
+
 	companion object {
-		val body by cssclass()
+		private val styleDefault by cssclass()
+		private val styleBlack by cssclass()
+		private val styleConsole by cssclass()
+		val labelResult by cssid()
+
+		fun setDesign(node: Node, design: Designs) {
+			node.styleClass.filter {
+				Designs.values().map {
+					it.rule.name
+				}.contains(it)
+			}.forEach {
+				node.removeClass(it)
+			}
+			node.addClass(design.rule)
+		}
+	}
+
+	enum class Designs(val rule: CssRule) {
+		DEFAULT(styleDefault), BLACK(styleBlack), CONSOLE(styleConsole)
 	}
 
 	init {
-		body {
-			backgroundColor += Color.BLACK
-			borderColor += box(Color.GRAY)
+		styleDefault {
+			+DefaultStyle
 		}
 
-		button {
-			backgroundColor += Color.BLACK
-			borderColor += box(Color.WHITE)
-			textFill = Color.WHITE
+		styleBlack {
+			+BlackStyle
 		}
 
-		textField {
-			backgroundColor += Color.BLACK
-			borderColor += box(Color.WHITE)
-			textFill = Color.WHITE
-		}
-
-		label {
-			textFill = Color.WHITE
-		}
-
-		contextMenu {
-			backgroundColor += Color.BLACK
+		styleConsole {
+			+ConsoleStyle
 		}
 	}
+
 }
